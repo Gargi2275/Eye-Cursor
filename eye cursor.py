@@ -70,8 +70,13 @@ while cap.isOpened():
 
         # 2. Movement (Freeze cursor if blinking to prevent 'slipping')
         if not blinking:
-            iris = face[475]
-            target_x, target_y = get_screen_coords(iris.x, iris.y)
+            right_iris = face[475]
+            left_iris = face[470]
+
+            avg_x = (right_iris.x + left_iris.x) / 2
+            avg_y = (right_iris.y + left_iris.y) / 2
+
+            target_x, target_y = get_screen_coords(avg_x, avg_y)
 
             # Smooth movement logic
             curr_x = prev_x + (target_x - prev_x) / smooth
@@ -94,12 +99,14 @@ while cap.isOpened():
                 last_blink = now
             is_closed = False
 
-        # Visual marker for debugging
-        dot_color = (0, 0, 255) if blinking else (0, 255, 0)
-        cv2.circle(frame, (int(face[475].x * w), int(face[475].y * h)), 4, dot_color, -1)
 
     cv2.imshow("Eye Track", frame)
-    if cv2.waitKey(1) & 0xFF == 27: break
+
+    # Keep window always on top
+    cv2.setWindowProperty("Eye Track", cv2.WND_PROP_TOPMOST, 1)
+
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
 
 cap.release()
 cv2.destroyAllWindows()
